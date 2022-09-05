@@ -11,7 +11,7 @@ const dbData = fs.readFileSync('./database.json');
 const dbInfo = JSON.parse(dbData);
 const mysql = require('mysql');
 
-const connection = mysql.createConnection({
+const db = mysql.createConnection({
 	host: dbInfo.host,
 	user: dbInfo.user,
 	password: dbInfo.password,
@@ -19,12 +19,14 @@ const connection = mysql.createConnection({
 	database: dbInfo.database,
 	insecureAuth: true
 });
-connection.connect();
+db.connect();
 
-app.get('/main/get', (request, response) => {
+app.get('/upm/main/get', (request, response) => {
+	console.log('request', request);
 	// response.send("Success your main loaded");
-	let sql = "SELECT * FROM TESTTABLE";
-	connection.query(sql, (err, rows, fields) => {
+	let sql = "SELECT * FROM TESTTABLE WHERE SEQ = ?";
+	let parameter = [JSON.parse(request.data.seq)];
+	db.query(sql, parameter, (err, rows, fields) => {
 			if (err) {
 				console.log(err);
 				alert("데이터 조회에 실패했습니다.");
@@ -36,14 +38,14 @@ app.get('/main/get', (request, response) => {
 	)
 });
 
-app.post("/main/post", (request, response) => {
+app.post("/upm/main/post", (request, response) => {
 	const data = {
 		name: 'master',
 		date: 'NOW()'
 	};
-	let sql = "INSERT INTO TESTTABLE(NAME, DATE) VALUES(?)"; // insert or update
+	let sql = "INSERT INTO TESTTABLE(NAME, DATE) VALUES(?)";
 	let parameter = [data.name, data.date];
-	connection.query(sql, parameter, (err, rows, fields) => {
+	db.query(sql, parameter, (err, rows, fields) => {
 			if (err) {
 				console.log(err);
 				alert("데이터 저장에 실패했습니다.");
@@ -54,10 +56,10 @@ app.post("/main/post", (request, response) => {
 	);
 });
 
-app.delete('/main/delete/:id', (request, response) => {
+app.delete('/upm/main/delete/:id', (request, response) => {
 	let sql = "DELETE FROM TESTTABLE WHERE SEQ = ?";
 	let parameter = [request.param.id];
-	connection.query(sql, parameter, (err, rows, fields) => {
+	db.query(sql, parameter, (err, rows, fields) => {
 		if (err) {
 				console.log(err);
 				alert("데이터 삭제에 실패했습니다.");
